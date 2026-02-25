@@ -1,0 +1,67 @@
+// Vibe Gallery – Prisma Schema
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MonetizationStatus {
+  NOT_MONETIZED
+  TRYING
+  MONETIZED_SELF_REPORTED
+  VERIFIED
+}
+
+model User {
+  id        String    @id // Supabase auth.users.id (UUID)
+  username  String    @unique
+  avatarUrl String?
+  bio       String?
+  claimed   Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  projects  Project[]
+  likes     Like[]
+}
+
+model Project {
+  id                   String                @id @default(cuid())
+  title                String
+  description          String?
+  link                 String
+  thumbnail            String?
+  monetizationStatus   MonetizationStatus    @default(NOT_MONETIZED)
+  verifiedAmount       Float?
+  featured             Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  authorId             String
+  author               User                  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes                Like[]
+  revenueVerifications RevenueVerification[]
+}
+
+model RevenueVerification {
+  id         String   @id @default(cuid())
+  provider   String   // "stripe" | "gumroad" | "lemon_squeezy"
+  amount     Float
+  currency   String   @default("USD")
+  verifiedAt DateTime
+  createdAt  DateTime @default(now())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  projectId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
