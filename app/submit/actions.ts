@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { MonetizationStatus } from "@prisma/client";
+import { MonetizationStatus } from "@/app/types";
 
 export async function submitProject(formData: FormData) {
   const supabase = await createSupabaseServerClient();

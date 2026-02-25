@@ -1,4 +1,4 @@
-import { MonetizationStatus } from "@prisma/client";
+import { MonetizationStatus } from "@/app/types";
 import { BadgeCheck, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

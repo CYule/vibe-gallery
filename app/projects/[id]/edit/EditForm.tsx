@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { Loader2, ExternalLink } from "lucide-react";
 import { updateProject } from "../actions";
-import { MonetizationStatus } from "@prisma/client";
+import { MonetizationStatus } from "@/app/types";
 
 type Project = {
   id: string;
