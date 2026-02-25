@@ -1,7 +1,8 @@
 import { MonetizationStatus } from "@prisma/client";
-import { Heart, BadgeCheck, Star } from "lucide-react";
+import { BadgeCheck, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import LikeButton from "./LikeButton";
 
 type Project = {
   id: string;
@@ -73,10 +74,11 @@ export default function ProjectCard({ project }: { project: Project }) {
             amount={project.verifiedAmount}
           />
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-xs font-bold">
-              <Heart size={12} />
-              {project._count.likes}
-            </span>
+            <LikeButton
+              projectId={project.id}
+              initialLiked={false}
+              initialCount={project._count.likes}
+            />
             <span className="text-xs font-medium opacity-60">
               @{project.author.username}
             </span>

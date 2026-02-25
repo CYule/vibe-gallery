@@ -2,8 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { StatusBadge } from "@/app/components/ProjectCard";
-import { ExternalLink, Heart, ArrowLeft } from "lucide-react";
+import LikeButton from "@/app/components/LikeButton";
+import DeleteButton from "./DeleteButton";
+import { ExternalLink, ArrowLeft, Pencil } from "lucide-react";
 
 async function getProject(id: string) {
   return prisma.project.findUnique({
@@ -21,20 +24,50 @@ export default async function ProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = await getProject(id);
+  const [project, supabase] = await Promise.all([
+    getProject(id),
+    createSupabaseServerClient(),
+  ]);
 
   if (!project) notFound();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === project.authorId;
+  const isAdmin = user?.email === process.env.ADMIN_EMAIL;
+  const canEdit = isOwner || isAdmin;
+
+  const hasLiked = user
+    ? !!(await prisma.like.findUnique({
+        where: { userId_projectId: { userId: user.id, projectId: id } },
+      }))
+    : false;
 
   return (
     <div className="max-w-3xl mx-auto pt-8 space-y-8">
       {/* Back */}
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
-      >
-        <ArrowLeft size={14} />
-        Back to Gallery
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
+        >
+          <ArrowLeft size={14} />
+          Back to Gallery
+        </Link>
+
+        {/* Owner actions */}
+        {canEdit && (
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/projects/${id}/edit`}
+              className="inline-flex items-center gap-1.5 border border-black px-4 py-1.5 text-sm font-bold hover:bg-black hover:text-[#f2f0ea] transition-colors"
+            >
+              <Pencil size={14} />
+              Edit
+            </Link>
+            <DeleteButton projectId={id} />
+          </div>
+        )}
+      </div>
 
       {/* Thumbnail */}
       {project.thumbnail && (
@@ -59,10 +92,11 @@ export default async function ProjectPage({
             status={project.monetizationStatus}
             amount={project.verifiedAmount}
           />
-          <span className="flex items-center gap-1 text-sm font-bold">
-            <Heart size={13} />
-            {project._count.likes}
-          </span>
+          <LikeButton
+            projectId={id}
+            initialLiked={hasLiked}
+            initialCount={project._count.likes}
+          />
           <span className="text-sm font-medium opacity-50">
             {new Date(project.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
