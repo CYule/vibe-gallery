@@ -26,8 +26,7 @@ export default async function HomePage() {
           Discover Vibe-Coded Projects
         </h1>
         <p className="text-lg font-medium max-w-xl">
-          A gallery of projects built by indie hackers. See what&apos;s
-          shipping, what&apos;s making money, and what&apos;s worth copying.
+          A gallery of projects built by indie hackers.
         </p>
       </section>
 
