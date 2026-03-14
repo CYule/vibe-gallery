@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Loader2, ExternalLink } from "lucide-react";
+import { Loader2, ExternalLink, Upload } from "lucide-react";
 import { updateProject } from "../actions";
 import { MonetizationStatus } from "@/app/types";
+import { supabase } from "@/lib/supabase";
 
 type Project = {
   id: string;
@@ -25,6 +26,8 @@ export default function EditForm({ project }: { project: Project }) {
   const [fetching, setFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const linkRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -47,6 +50,35 @@ export default function EditForm({ project }: { project: Project }) {
     } finally {
       setFetching(false);
     }
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? "anon";
+    const filename = `${userId}-${Date.now()}-${file.name}`;
+
+    const { error } = await supabase.storage
+      .from("thumbnails")
+      .upload(filename, file, { upsert: false });
+
+    if (error) {
+      setUploadError("Upload failed. Try again.");
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("thumbnails")
+      .getPublicUrl(filename);
+
+    setThumbnail(urlData.publicUrl);
+    setUploading(false);
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -102,6 +134,31 @@ export default function EditForm({ project }: { project: Project }) {
           </div>
         </div>
       )}
+
+      {/* Manual image upload */}
+      <div className="space-y-1">
+        <label className="block text-sm font-bold uppercase tracking-wide">
+          Upload Thumbnail
+        </label>
+        <label className="flex items-center gap-2 border border-black px-4 py-2.5 text-sm font-bold cursor-pointer hover:bg-black hover:text-[#f2f0ea] transition-colors w-fit">
+          {uploading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Upload size={14} />
+          )}
+          {uploading ? "Uploading…" : "Choose Image"}
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleFileUpload}
+            disabled={uploading}
+          />
+        </label>
+        {uploadError && (
+          <p className="text-xs font-medium text-red-700">{uploadError}</p>
+        )}
+      </div>
 
       {/* Title */}
       <div className="space-y-1">

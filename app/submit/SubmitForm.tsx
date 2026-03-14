@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Loader2, ExternalLink, Star } from "lucide-react";
+import { Loader2, ExternalLink, Star, Upload } from "lucide-react";
 import { submitProject } from "./actions";
+import { supabase } from "@/lib/supabase";
 
 type OGPreview = {
   title: string | null;
@@ -21,6 +22,9 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
   const [preview, setPreview] = useState<OGPreview | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [uploadedThumbnail, setUploadedThumbnail] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const linkRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -53,10 +57,40 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? "anon";
+    const filename = `${userId}-${Date.now()}-${file.name}`;
+
+    const { error } = await supabase.storage
+      .from("thumbnails")
+      .upload(filename, file, { upsert: false });
+
+    if (error) {
+      setUploadError("Upload failed. Try again.");
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("thumbnails")
+      .getPublicUrl(filename);
+
+    setUploadedThumbnail(urlData.publicUrl);
+    setUploading(false);
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    if (preview?.image) fd.set("thumbnail", preview.image);
+    const thumbnail = uploadedThumbnail ?? preview?.image ?? null;
+    if (thumbnail) fd.set("thumbnail", thumbnail);
     startTransition(() => submitProject(fd));
   }
 
@@ -102,13 +136,44 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
       </div>
 
       {/* Thumbnail preview */}
-      {preview?.image && (
+      {(uploadedThumbnail ?? preview?.image) && (
         <div className="border border-black">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview.image} alt="Preview" className="w-full aspect-video object-cover" />
-          <input type="hidden" name="thumbnail" value={preview.image} />
+          <img
+            src={uploadedThumbnail ?? preview!.image!}
+            alt="Preview"
+            className="w-full aspect-video object-cover"
+          />
         </div>
       )}
+
+      {/* Manual image upload */}
+      <div className="space-y-1">
+        <label className="block text-sm font-bold uppercase tracking-wide">
+          Upload Thumbnail
+        </label>
+        <label className="flex items-center gap-2 border border-black px-4 py-2.5 text-sm font-bold cursor-pointer hover:bg-black hover:text-[#f2f0ea] transition-colors w-fit">
+          {uploading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Upload size={14} />
+          )}
+          {uploading ? "Uploading…" : "Choose Image"}
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleFileUpload}
+            disabled={uploading}
+          />
+        </label>
+        {uploadError && (
+          <p className="text-xs font-medium text-red-700">{uploadError}</p>
+        )}
+        {uploadedThumbnail && (
+          <p className="text-xs font-medium text-green-700">Image uploaded.</p>
+        )}
+      </div>
 
       {/* Title */}
       <div className="space-y-1">
