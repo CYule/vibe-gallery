@@ -1,3 +1,4 @@
+import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,6 +8,29 @@ import { StatusBadge } from "@/app/components/ProjectCard";
 import LikeButton from "@/app/components/LikeButton";
 import DeleteButton from "./DeleteButton";
 import { ExternalLink, ArrowLeft, Pencil } from "lucide-react";
+
+function linkify(text: string) {
+  const urlRegex = /https?:\/\/[^\s]+/g;
+  const parts = text.split(urlRegex);
+  const matches = text.match(urlRegex) ?? [];
+  return parts.reduce<React.ReactNode[]>((acc, part, i) => {
+    acc.push(part);
+    if (matches[i]) {
+      acc.push(
+        <a
+          key={i}
+          href={matches[i]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline font-medium hover:opacity-70"
+        >
+          {matches[i]}
+        </a>
+      );
+    }
+    return acc;
+  }, []);
+}
 
 async function getProject(id: string) {
   return prisma.project.findUnique({
@@ -107,7 +131,7 @@ export default async function ProjectPage({
         </div>
 
         {project.description && (
-          <p className="text-base leading-relaxed">{project.description}</p>
+          <p className="text-base leading-relaxed">{linkify(project.description)}</p>
         )}
 
         <a
