@@ -38,7 +38,7 @@ export default async function ProfilePage({
 
   // Don't show the claim banner to the person who already owns this profile
   const isOwner = user?.id === profile.id;
-  const showClaimBanner = !profile.claimed && !isOwner;
+  const showClaimBanner = !profile.claimed && !isOwner && profile.username !== "galleryvibe";
 
   return (
     <div className="pt-8 space-y-10">
@@ -96,7 +96,7 @@ export default async function ProfilePage({
             <h1 className="text-3xl font-black tracking-tight">
               @{profile.username}
             </h1>
-            {!profile.claimed && (
+            {!profile.claimed && profile.username !== "galleryvibe" && (
               <span className="text-xs font-black uppercase tracking-widest border border-black/30 px-2 py-0.5 opacity-40">
                 Unclaimed
               </span>
