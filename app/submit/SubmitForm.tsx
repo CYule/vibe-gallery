@@ -101,7 +101,7 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
         <div className="flex items-center gap-2 border border-black bg-black text-[#f2f0ea] px-4 py-2.5">
           <Star size={13} fill="currentColor" />
           <p className="text-xs font-black uppercase tracking-widest">
-            Admin — will be auto-featured under @vibegallery
+            Admin — will be auto-featured under @galleryvibe
           </p>
         </div>
       )}

@@ -28,13 +28,13 @@ export async function submitProject(formData: FormData) {
   let featured = false;
 
   if (isAdmin) {
-    // Auto-feature and attribute to the @vibegallery curator account
+    // Auto-feature and attribute to the @galleryvibe curator account
     const curator = await prisma.user.upsert({
-      where: { username: "vibegallery" },
+      where: { username: "galleryvibe" },
       update: {},
       create: {
         id: crypto.randomUUID(),
-        username: "vibegallery",
+        username: "galleryvibe",
         claimed: false,
       },
     });
