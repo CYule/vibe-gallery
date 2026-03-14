@@ -49,7 +49,7 @@ export default async function HomePage({
         <h1 className="text-5xl font-black leading-tight tracking-tight mb-3">
           Discover Vibe-Coded Projects
         </h1>
-        <p className="text-lg font-medium max-w-xl">
+        <p className="text-lg font-medium max-w-3xl">
           A gallery of projects built by indie hackers. Share what you&apos;re building with the community.
         </p>
       </section>
