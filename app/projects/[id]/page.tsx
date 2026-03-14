@@ -138,7 +138,7 @@ export default async function ProjectPage({
           href={project.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 border border-black px-5 py-2.5 text-sm font-bold hover:bg-black hover:text-[#f2f0ea] transition-colors"
+          className="inline-flex items-center gap-2 border border-black px-6 py-3 text-sm font-bold bg-black text-[#f2f0ea] hover:bg-transparent hover:text-black transition-colors"
         >
           <ExternalLink size={14} />
           Visit Project
