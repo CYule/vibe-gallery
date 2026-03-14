@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vibe Gallery",
+  title: "Gallery Vibe",
   description: "Discover and share vibe-coded projects.",
 };
 
@@ -41,7 +41,7 @@ export default function RootLayout({
           <footer className="border-t border-black">
             <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
               <p className="text-sm font-medium">
-                Vibe Gallery &copy; {new Date().getFullYear()}
+                Gallery Vibe &copy; {new Date().getFullYear()}
               </p>
             </div>
           </footer>
@@ -60,7 +60,7 @@ async function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           <a href="/" className="text-xl font-black tracking-tight">
-            Vibe Gallery
+            Gallery Vibe
           </a>
           <nav className="flex items-center gap-4">
             {user ? (
