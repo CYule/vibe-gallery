@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Loader2, ExternalLink, Star, Upload } from "lucide-react";
+import { Loader2, ExternalLink, Star, Upload, Check } from "lucide-react";
 import { submitProject } from "./actions";
 import { supabase } from "@/lib/supabase";
 
@@ -19,6 +19,7 @@ const STATUS_OPTIONS = [
 
 export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
   const [fetching, setFetching] = useState(false);
+  const [fetchSuccess, setFetchSuccess] = useState(false);
   const [preview, setPreview] = useState<OGPreview | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -36,6 +37,7 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
 
     setFetching(true);
     setFetchError(null);
+    setFetchSuccess(false);
     setPreview(null);
 
     try {
@@ -44,6 +46,7 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
       const data: OGPreview = await res.json();
 
       setPreview(data);
+      setFetchSuccess(true);
       if (data.title && titleRef.current && !titleRef.current.value) {
         titleRef.current.value = data.title;
       }
@@ -118,16 +121,17 @@ export default function SubmitForm({ isAdmin }: { isAdmin: boolean }) {
             type="url"
             required
             placeholder="https://yourproject.com"
+            onChange={() => setFetchSuccess(false)}
             className="flex-1 border border-black px-3 py-2 text-sm font-medium bg-[#f2f0ea] placeholder:text-black/30 focus:outline-none focus:ring-1 focus:ring-black"
           />
           <button
             type="button"
             onClick={handleFetchPreview}
             disabled={fetching}
-            className="border border-black px-4 py-2 text-sm font-bold flex items-center gap-1.5 hover:bg-black hover:text-[#f2f0ea] transition-colors disabled:opacity-40"
+            className={`border border-black px-4 py-2 text-sm font-bold flex items-center gap-1.5 transition-colors disabled:opacity-40 ${fetchSuccess ? "bg-black text-[#f2f0ea]" : "hover:bg-black hover:text-[#f2f0ea]"}`}
           >
-            {fetching ? <Loader2 size={14} className="animate-spin" /> : <ExternalLink size={14} />}
-            {fetching ? "Fetching…" : "Fetch Details"}
+            {fetching ? <Loader2 size={14} className="animate-spin" /> : fetchSuccess ? <Check size={14} /> : <ExternalLink size={14} />}
+            {fetching ? "Fetching…" : fetchSuccess ? "Fetched!" : "Fetch Details"}
           </button>
         </div>
         {fetchError && (
