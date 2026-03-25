@@ -120,6 +120,7 @@ export default async function ProjectPage({
             projectId={id}
             initialLiked={hasLiked}
             initialCount={project._count.likes}
+            isLoggedIn={!!user}
           />
           <span className="text-sm font-medium opacity-50">
             {new Date(project.createdAt).toLocaleDateString("en-US", {

@@ -24,7 +24,7 @@ const STATUS_LABELS: Record<MonetizationStatus, string> = {
   VERIFIED: "Verified",
 };
 
-export default function ProjectCard({ project }: { project: Project }) {
+export default function ProjectCard({ project, isLoggedIn = false }: { project: Project; isLoggedIn?: boolean }) {
   return (
     <Link
       href={`/projects/${project.id}`}
@@ -78,6 +78,7 @@ export default function ProjectCard({ project }: { project: Project }) {
               projectId={project.id}
               initialLiked={false}
               initialCount={project._count.likes}
+              isLoggedIn={isLoggedIn}
             />
             <span className="text-xs font-medium opacity-60">
               @{project.author.username}

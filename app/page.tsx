@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { MonetizationStatus } from "@prisma/client";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import ProjectCard from "./components/ProjectCard";
 import SearchBar from "./components/SearchBar";
 import FilterBar from "./components/FilterBar";
@@ -38,7 +39,12 @@ export default async function HomePage({
   const statuses = status ? (Array.isArray(status) ? status : [status]) : [];
   const isFiltering = !!q || statuses.length > 0;
 
-  const projects = await getProjects(q, statuses);
+  const [projects, supabase] = await Promise.all([
+    getProjects(q, statuses),
+    createSupabaseServerClient(),
+  ]);
+  const { data: { user } } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
   const featured = isFiltering ? [] : projects.filter((p) => p.featured);
   const rest = isFiltering ? projects : projects.filter((p) => !p.featured);
 
@@ -76,7 +82,7 @@ export default async function HomePage({
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {featured.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
+                  <ProjectCard key={project.id} project={project} isLoggedIn={isLoggedIn} />
                 ))}
               </div>
             </section>
@@ -105,7 +111,7 @@ export default async function HomePage({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(isFiltering ? projects : featured.length > 0 ? rest : projects).map(
                 (project) => (
-                  <ProjectCard key={project.id} project={project} />
+                  <ProjectCard key={project.id} project={project} isLoggedIn={isLoggedIn} />
                 )
               )}
             </div>
